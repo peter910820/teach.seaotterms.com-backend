@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 
 	"teach.seaotterms.com-backend/model"
+	"teach.seaotterms.com-backend/router"
 )
 
 var (
@@ -38,6 +39,10 @@ func main() {
 	model.Migration(dbName, dbs[dbName])
 
 	app := fiber.New()
+
+	// route group
+	apiGroup := app.Group("/api") // main api route group
+	router.ApiRouter(apiGroup, dbs)
 
 	logrus.Fatal(app.Listen(fmt.Sprintf("127.0.0.1:%s", os.Getenv("PRODUCTION_PORT"))))
 }
