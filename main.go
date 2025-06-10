@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -39,10 +40,17 @@ func main() {
 	model.Migration(dbName, dbs[dbName])
 
 	app := fiber.New()
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowMethods: "GET,POST,HEAD,PUT,DELETE,PATCH",
+		AllowHeaders: "Origin,Content-Type,Accept",
+	}))
 
 	// route group
 	apiGroup := app.Group("/api") // main api route group
-	router.ApiRouter(apiGroup, dbs)
+	router.SeriesRouter(apiGroup, dbs)
+	router.ArticleApiRouter(apiGroup, dbs)
+	router.CommentApiRouter(apiGroup, dbs)
 
 	logrus.Fatal(app.Listen(fmt.Sprintf("127.0.0.1:%s", os.Getenv("PRODUCTION_PORT"))))
 }

@@ -2,10 +2,13 @@ package api
 
 import (
 	"net/url"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+
+	"teach.seaotterms.com-backend/dto"
 	"teach.seaotterms.com-backend/model"
 )
 
@@ -46,5 +49,74 @@ func QuerySeries(c *fiber.Ctx, db *gorm.DB) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"msg":  "查詢Series資料成功",
 		"data": responseData,
+	})
+}
+
+func CreateSeries(c *fiber.Ctx, db *gorm.DB) error {
+	var clientData dto.SeriesCreateResponse
+	// load client data
+	if err := c.BodyParser(&clientData); err != nil {
+		logrus.Error(err.Error())
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"msg": err.Error(),
+		})
+	}
+
+	data := model.Series{
+		Title:       clientData.Title,
+		CreatedAt:   time.Now(),
+		CreatedName: "Root",
+	}
+
+	r := db.Create(&data)
+	if r.Error != nil {
+		logrus.Error(r.Error)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"msg": r.Error.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"msg":  "新增Series資料成功",
+		"data": data,
+	})
+}
+
+func ModifySeries(c *fiber.Ctx, db *gorm.DB) error {
+	var clientData dto.SeriesModifyResponse
+	// load client data
+	if err := c.BodyParser(&clientData); err != nil {
+		logrus.Error(err.Error())
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"msg": err.Error(),
+		})
+	}
+
+	data := model.Series{
+		Title:       clientData.Title,
+		UpdatedAt:   time.Now(),
+		UpdatedName: "Root",
+	}
+
+	r := db.Model(&model.Series{}).Where("id = ?", c.Params("id")).
+		Select("title", "updated_at", "updated_name").
+		Updates(data)
+	if r.Error != nil {
+		logrus.Error(r.Error)
+		// if record not exist
+		if r.Error == gorm.ErrRecordNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"msg": r.Error.Error(),
+			})
+		} else {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"msg": r.Error.Error(),
+			})
+		}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"msg":  "修改Series資料成功",
+		"data": data,
 	})
 }
