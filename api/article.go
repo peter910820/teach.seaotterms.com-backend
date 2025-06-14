@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -68,15 +69,6 @@ func CreateArticle(c *fiber.Ctx, db *gorm.DB) error {
 		})
 	}
 
-	data := model.Article{
-		Title:       clientData.Title,
-		SeriesID:    clientData.SeriesID,
-		Tags:        clientData.Tags,
-		Content:     clientData.Content,
-		CreatedAt:   time.Now(),
-		CreatedName: "Root",
-	}
-
 	// confirm whether a exists
 	var seriesData model.Series
 	r := db.First(&seriesData, clientData.SeriesID)
@@ -88,6 +80,20 @@ func CreateArticle(c *fiber.Ctx, db *gorm.DB) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"msg": r.Error,
 		})
+	}
+
+	if strings.Trim(clientData.Image, " ") == "" {
+		clientData.Image = seriesData.Image
+	}
+
+	data := model.Article{
+		Title:       clientData.Title,
+		Image:       clientData.Image,
+		SeriesID:    clientData.SeriesID,
+		Tags:        clientData.Tags,
+		Content:     clientData.Content,
+		CreatedAt:   time.Now(),
+		CreatedName: "Root",
 	}
 
 	r = db.Create(&data)

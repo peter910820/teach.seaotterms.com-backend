@@ -64,6 +64,7 @@ func CreateSeries(c *fiber.Ctx, db *gorm.DB) error {
 
 	data := model.Series{
 		Title:       clientData.Title,
+		Image:       clientData.Image,
 		CreatedAt:   time.Now(),
 		CreatedName: "Root",
 	}
@@ -94,12 +95,13 @@ func ModifySeries(c *fiber.Ctx, db *gorm.DB) error {
 
 	data := model.Series{
 		Title:       clientData.Title,
+		Image:       clientData.Image,
 		UpdatedAt:   time.Now(),
 		UpdatedName: "Root",
 	}
 
 	r := db.Model(&model.Series{}).Where("id = ?", c.Params("id")).
-		Select("title", "updated_at", "updated_name").
+		Select("title", "image", "updated_at", "updated_name").
 		Updates(data)
 	if r.Error != nil {
 		logrus.Error(r.Error)
