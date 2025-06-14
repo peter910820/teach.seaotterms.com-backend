@@ -9,6 +9,7 @@ import (
 type Series struct {
 	ID            uint      `gorm:"primaryKey" json:"id"`
 	Title         string    `gorm:"NOT NULL" json:"title"`
+	Image         string    `json:"image"`
 	ArticleAmount uint      `gorm:"NOT NULL; default:0" json:"articleAmount"`
 	CreatedAt     time.Time `gorm:"NOT NULL; autoCreateTime" json:"createdAt"`
 	CreatedName   string    `gorm:"NOT NULL" json:"createdName"`
@@ -19,6 +20,7 @@ type Series struct {
 type Article struct {
 	ID          uint           `gorm:"primaryKey" json:"id"`
 	Title       string         `gorm:"NOT NULL" json:"title"`
+	Image       string         `json:"image"`
 	SeriesID    uint           `gorm:"NOT NULL" json:"seriesId"` // series table id
 	Tags        pq.StringArray `gorm:"type:text[]" json:"tags"`
 	Content     string         `gorm:"NOT NULL" json:"content"`
