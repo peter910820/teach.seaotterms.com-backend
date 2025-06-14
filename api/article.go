@@ -122,3 +122,63 @@ func CreateArticle(c *fiber.Ctx, db *gorm.DB) error {
 		"data": data,
 	})
 }
+
+func ModifyArticle(c *fiber.Ctx, db *gorm.DB) error {
+	var clientData dto.ArtilceModifyResponse
+	// load client data
+	if err := c.BodyParser(&clientData); err != nil {
+		logrus.Error(err.Error())
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"msg": err.Error(),
+		})
+	}
+
+	// confirm whether a exists
+	var seriesData model.Series
+	r := db.First(&seriesData, clientData.SeriesID)
+	if errors.Is(r.Error, gorm.ErrRecordNotFound) {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"msg": "資料不存在",
+		})
+	} else if r.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"msg": r.Error,
+		})
+	}
+
+	if strings.Trim(clientData.Image, " ") == "" {
+		clientData.Image = seriesData.Image
+	}
+
+	data := model.Article{
+		Title:       clientData.Title,
+		Image:       clientData.Image,
+		SeriesID:    clientData.SeriesID,
+		Tags:        clientData.Tags,
+		Content:     clientData.Content,
+		UpdatedAt:   time.Now(),
+		UpdatedName: "Root",
+	}
+
+	r = db.Model(&model.Article{}).Where("id = ?", c.Params("id")).
+		Select("title", "image", "series_id", "tags", "content", "updated_at", "updated_name").
+		Updates(data)
+	if r.Error != nil {
+		logrus.Error(r.Error)
+		// if record not exist
+		if r.Error == gorm.ErrRecordNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"msg": r.Error.Error(),
+			})
+		} else {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"msg": r.Error.Error(),
+			})
+		}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"msg":  "修改Article資料成功",
+		"data": data,
+	})
+}
