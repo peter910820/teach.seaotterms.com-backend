@@ -61,7 +61,7 @@ func CreateSeries(c *fiber.Ctx, db *gorm.DB) error {
 			"msg": err.Error(),
 		})
 	}
-
+	logrus.Debugf("%+v", clientData)
 	data := model.Series{
 		Title:       clientData.Title,
 		Image:       clientData.Image,
@@ -76,7 +76,7 @@ func CreateSeries(c *fiber.Ctx, db *gorm.DB) error {
 			"msg": r.Error.Error(),
 		})
 	}
-
+	logrus.Print("新增Series資料成功")
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"msg":  "新增Series資料成功",
 		"data": data,

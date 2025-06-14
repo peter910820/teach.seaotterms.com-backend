@@ -24,6 +24,13 @@ func SeriesRouter(apiGroup fiber.Router, dbs map[string]*gorm.DB) {
 }
 
 func ArticleApiRouter(apiGroup fiber.Router, dbs map[string]*gorm.DB) {
+	apiGroup.Get("/article", func(c *fiber.Ctx) error {
+		return api.QueryArticle(c, dbs[os.Getenv("DATABASE_NAME")])
+	})
+
+	apiGroup.Post("/article", func(c *fiber.Ctx) error {
+		return api.CreateArticle(c, dbs[os.Getenv("DATABASE_NAME")])
+	})
 }
 
 func CommentApiRouter(apiGroup fiber.Router, dbs map[string]*gorm.DB) {
