@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"net/url"
 	"strings"
 	"time"
 
@@ -23,25 +22,14 @@ type LinkUpdateSeries struct {
 func QueryArticle(c *fiber.Ctx, db *gorm.DB) error {
 	var responseData []model.Article
 	var r *gorm.DB
-	// URL decoding
-	id, err := url.QueryUnescape(c.Params("id"))
-	if err != nil {
-		logrus.Error(err)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"msg": err.Error(),
-		})
-	}
-	seriesId, err := url.QueryUnescape(c.Params("series-id"))
-	if err != nil {
-		logrus.Error(err)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"msg": err.Error(),
-		})
-	}
-	if id == "" && seriesId == "" {
+
+	id := c.Query("id")
+	seriesID := c.Query("series-id")
+
+	if id == "" && seriesID == "" {
 		r = db.Order("COALESCE(updated_at, created_at) DESC").Find(&responseData)
-	} else if seriesId != "" {
-		r = db.Where("series_id = ?", id).Order("COALESCE(updated_at, created_at) ASC").Find(&responseData)
+	} else if seriesID != "" {
+		r = db.Where("series_id = ?", seriesID).Order("COALESCE(updated_at, created_at) ASC").Find(&responseData)
 	} else {
 		r = db.Where("id = ?", id).Order("COALESCE(updated_at, created_at) DESC").Find(&responseData)
 	}
