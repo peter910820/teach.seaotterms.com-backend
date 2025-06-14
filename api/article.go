@@ -31,8 +31,17 @@ func QueryArticle(c *fiber.Ctx, db *gorm.DB) error {
 			"msg": err.Error(),
 		})
 	}
-	if id == "" {
+	seriesId, err := url.QueryUnescape(c.Params("series-id"))
+	if err != nil {
+		logrus.Error(err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"msg": err.Error(),
+		})
+	}
+	if id == "" && seriesId == "" {
 		r = db.Order("COALESCE(updated_at, created_at) DESC").Find(&responseData)
+	} else if seriesId != "" {
+		r = db.Where("series_id = ?", id).Order("COALESCE(updated_at, created_at) ASC").Find(&responseData)
 	} else {
 		r = db.Where("id = ?", id).Order("COALESCE(updated_at, created_at) DESC").Find(&responseData)
 	}
